@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Python依存関係のインストール（Rustコンパイルを完全に回避）
-COPY requirements-super-minimal.txt ./
-RUN pip install --no-cache-dir --no-build-isolation --only-binary=all -r requirements-super-minimal.txt
+COPY requirements-final.txt ./
+RUN pip install --no-cache-dir --no-build-isolation --only-binary=all -r requirements-final.txt
 
 # アプリケーションコードのコピー
 COPY . ./
