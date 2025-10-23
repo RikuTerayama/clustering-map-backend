@@ -7,6 +7,7 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
+    dockerCommand: docker build -t clustering-map-api .
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONPATH
