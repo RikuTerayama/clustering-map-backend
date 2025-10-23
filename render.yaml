@@ -6,8 +6,8 @@ services:
     region: oregon
     plan: free
     pythonVersion: "3.11"
-        buildCommand: |
-          pip install -r requirements-no-rust.txt
+    buildCommand: |
+      pip install -r requirements-super-minimal.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONPATH
