@@ -14,4 +14,12 @@ services:
         value: /app
       - key: ENVIRONMENT
         value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: MAX_UPLOAD_SIZE
+        value: "50MB"
+      - key: CORS_ORIGINS
+        value: "https://clustering-map-frontend.onrender.com"
     healthCheckPath: /health
