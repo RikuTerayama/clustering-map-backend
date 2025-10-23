@@ -5,9 +5,9 @@ services:
     env: python
     region: oregon
     plan: free
-        pythonVersion: "3.13"
+        pythonVersion: "3.11"
     buildCommand: |
-      pip install --only-binary=all --no-build-isolation -r requirements.txt
+      pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONPATH
