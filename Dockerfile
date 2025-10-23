@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y \
 # 作業ディレクトリの設定
 WORKDIR /app
 
-# Python依存関係のインストール（Rustコンパイルを回避）
-COPY requirements-ultra-minimal.txt ./
-RUN pip install --no-cache-dir --no-build-isolation -r requirements-ultra-minimal.txt
+# Python依存関係のインストール（Rustコンパイルを完全に回避）
+COPY requirements-no-rust.txt ./
+RUN pip install --no-cache-dir --no-build-isolation --only-binary=all -r requirements-no-rust.txt
 
 # アプリケーションコードのコピー
 COPY . ./
