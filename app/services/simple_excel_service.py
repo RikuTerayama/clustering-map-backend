@@ -139,13 +139,14 @@ class SimpleExcelService:
                     category_count += analysis_score
                 
                 if category_count > 0:
-                    # カテゴリ全体のスコア
-                    tag_candidates.append(TagCandidate(
-                        text=category,
-                        score=category_score / len(texts),
-                        category="ビジネスカテゴリ",
-                        count=category_count
-                    ))
+                    # カテゴリ全体のスコア（適切なカテゴリのみ）
+                    if self._is_valid_tag(category):
+                        tag_candidates.append(TagCandidate(
+                            text=category,
+                            score=category_score / len(texts),
+                            category="ビジネスカテゴリ",
+                            count=category_count
+                        ))
             
             # 個別の頻出キーワードも追加（ビジネス関連のもののみ）
             business_related_words = set()
@@ -156,12 +157,14 @@ class SimpleExcelService:
                 if (len(word) > 2 and count > 1 and 
                     (word in business_related_words or 
                      any(business_word in word for business_word in business_related_words))):
-                    tag_candidates.append(TagCandidate(
-                        text=word,
-                        score=count / len(texts),
-                        category="キーワード",
-                        count=count
-                    ))
+                    # 不適切なタグをフィルタリング
+                    if self._is_valid_tag(word):
+                        tag_candidates.append(TagCandidate(
+                            text=word,
+                            score=count / len(texts),
+                            category="キーワード",
+                            count=count
+                        ))
             
             # スコア順でソート
             tag_candidates.sort(key=lambda x: x.score, reverse=True)
@@ -232,6 +235,37 @@ class SimpleExcelService:
             }
         }
         return combined
+
+    def _is_valid_tag(self, tag: str) -> bool:
+        """タグが適切かどうかを判定"""
+        # 長すぎるタグを除外（10文字以上）
+        if len(tag) > 10:
+            return False
+        
+        # 不適切なパターンを除外
+        invalid_patterns = [
+            r'^[0-9]+$',  # 数字のみ
+            r'^[a-zA-Z]+$',  # 英字のみ
+            r'です$',  # 敬語で終わる
+            r'ます$',  # 敬語で終わる
+            r'ください$',  # 依頼で終わる
+            r'いただきたい$',  # 依頼で終わる
+            r'ですが$',  # 逆接で終わる
+            r'ので$',  # 理由で終わる
+            r'が$',  # 助詞で終わる
+            r'を$',  # 助詞で終わる
+            r'に$',  # 助詞で終わる
+            r'で$',  # 助詞で終わる
+            r'と$',  # 助詞で終わる
+            r'から$',  # 助詞で終わる
+            r'まで$',  # 助詞で終わる
+        ]
+        
+        for pattern in invalid_patterns:
+            if re.search(pattern, tag):
+                return False
+        
+        return True
     
     def get_tag_rules(self) -> List[Dict[str, Any]]:
         """タグルールを取得"""
