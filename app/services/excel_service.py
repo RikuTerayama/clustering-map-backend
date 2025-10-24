@@ -42,7 +42,7 @@ class ExcelService:
         os.makedirs(os.path.dirname(rules_path), exist_ok=True)
         
         with open(rules_path, 'w', encoding='utf-8') as f:
-            json.dump([rule.dict() for rule in self.tag_rules], f, ensure_ascii=False, indent=2)
+            json.dump([rule.model_dump() for rule in self.tag_rules], f, ensure_ascii=False, indent=2)
     
     def _get_keybert_model(self):
         """KeyBERTモデルを取得（遅延読み込み）"""
@@ -163,7 +163,7 @@ class ExcelService:
     
     def get_tag_rules(self) -> List[Dict[str, Any]]:
         """タグルールを取得"""
-        return [rule.dict() for rule in self.tag_rules]
+        return [rule.model_dump() for rule in self.tag_rules]
     
     def update_tag_rules(self, rules_data: Dict[str, Any]) -> None:
         """タグルールを更新"""
