@@ -110,8 +110,11 @@ class SimpleAnalysisService:
             }
             
         except Exception as e:
-            logger.error(f"Analysis failed: {e}")
-            raise Exception(f"分析中にエラーが発生しました: {str(e)}")
+            logger.error(f"Analysis failed: {e}", exc_info=True)
+            import traceback
+            error_details = traceback.format_exc()
+            logger.error(f"Full traceback: {error_details}")
+            raise Exception(f"分析中にエラーが発生しました: {str(e)} (詳細: {error_details})")
 
     def _generate_shape_coordinates(self, num_points: int, shape: str) -> List[Tuple[float, float]]:
         """指定された図形に基づいて座標を生成"""
