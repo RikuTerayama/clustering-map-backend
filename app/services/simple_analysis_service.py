@@ -31,6 +31,8 @@ class SimpleAnalysisService:
             logger.info("Starting analysis...")
             logger.info(f"Request attributes: {dir(request)}")
             logger.info(f"Request type: {type(request)}")
+            logger.info(f"Request config: {getattr(request, 'config', 'NOT_FOUND')}")
+            logger.info(f"Self config: {self.config}")
             
             # ダミーデータを生成（実際の実装では、アップロードされたデータを使用）
             texts = [
@@ -47,23 +49,31 @@ class SimpleAnalysisService:
             ]
             
             n_clusters = min(5, len(texts) // 3) if len(texts) > 3 else 1
+            logger.info(f"Number of clusters: {n_clusters}")
             
             # TF-IDFベクトル化
+            logger.info("Starting TF-IDF vectorization...")
             vectorizer = TfidfVectorizer(max_features=100, stop_words='english')
             tfidf_matrix = vectorizer.fit_transform(texts)
+            logger.info("TF-IDF vectorization completed")
             
             # クラスタリング（KMeans）
+            logger.info("Starting clustering...")
             if n_clusters > 1:
                 kmeans = KMeans(n_clusters=n_clusters, random_state=42)
                 cluster_labels = kmeans.fit_predict(tfidf_matrix)
             else:
                 cluster_labels = [0] * len(texts)
+            logger.info("Clustering completed")
             
             # 図形に基づく座標生成
+            logger.info("Generating shape coordinates...")
             shape_mask = request.shape_mask_path if hasattr(request, 'shape_mask_path') else 'circle'
             coordinates = self._generate_shape_coordinates(len(texts), shape_mask)
+            logger.info("Shape coordinates generated")
             
             # データポイントを生成
+            logger.info("Generating data points...")
             data_points = []
             for i, text in enumerate(texts):
                 # 基本的なテキスト分析
@@ -88,8 +98,10 @@ class SimpleAnalysisService:
                     }
                 )
                 data_points.append(data_point)
+            logger.info(f"Generated {len(data_points)} data points")
             
             # クラスタ情報を生成
+            logger.info("Generating cluster information...")
             clusters = {}
             for cluster_id in range(n_clusters):
                 cluster_points = [dp for dp in data_points if dp.cluster_id == cluster_id]
@@ -100,7 +112,9 @@ class SimpleAnalysisService:
                         "center_x": np.mean([dp.x for dp in cluster_points]),
                         "center_y": np.mean([dp.y for dp in cluster_points])
                     }
+            logger.info(f"Generated {len(clusters)} clusters")
             
+            logger.info("Preparing final result...")
             return {
                 "data_points": [dp.model_dump() for dp in data_points],
                 "clusters": clusters,
@@ -112,6 +126,7 @@ class SimpleAnalysisService:
                     "num_clusters": n_clusters
                 }
             }
+            logger.info("Analysis completed successfully")
             
         except Exception as e:
             logger.error(f"Analysis failed: {e}", exc_info=True)
