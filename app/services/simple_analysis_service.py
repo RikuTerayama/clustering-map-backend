@@ -81,7 +81,7 @@ class SimpleAnalysisService:
                 })
             
             return {
-                "data_points": [dp.dict() for dp in data_points],
+                "data_points": [dp.model_dump() for dp in data_points],
                 "clusters": clusters,
                 "tags": self._get_all_tags(data_points),
                 "statistics": {
