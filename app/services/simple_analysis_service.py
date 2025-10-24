@@ -86,14 +86,16 @@ class SimpleAnalysisService:
                 data_points.append(data_point)
             
             # クラスタ情報を生成
-            clusters = []
+            clusters = {}
             for cluster_id in range(n_clusters):
                 cluster_points = [dp for dp in data_points if dp.cluster_id == cluster_id]
-                clusters.append({
-                    "id": cluster_id,
-                    "name": f"Cluster {cluster_id + 1}",
-                    "count": len(cluster_points)
-                })
+                if cluster_points:  # 空でないクラスタのみ追加
+                    clusters[cluster_id] = {
+                        "size": len(cluster_points),
+                        "top_tags": self._get_cluster_top_tags(cluster_points),
+                        "center_x": np.mean([dp.x for dp in cluster_points]),
+                        "center_y": np.mean([dp.y for dp in cluster_points])
+                    }
             
             return {
                 "data_points": [dp.model_dump() for dp in data_points],
@@ -187,6 +189,24 @@ class SimpleAnalysisService:
                 coordinates.append((x, y))
         
         return coordinates
+
+    def _get_all_tags(self, data_points: List[DataPoint]) -> List[str]:
+        """すべてのデータポイントからタグを抽出"""
+        all_tags = set()
+        for dp in data_points:
+            all_tags.update(dp.tags)
+        return list(all_tags)
+
+    def _get_cluster_top_tags(self, cluster_points: List[DataPoint]) -> List[str]:
+        """クラスタの上位タグを取得"""
+        tag_counts = {}
+        for dp in cluster_points:
+            for tag in dp.tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+        
+        # 出現回数順でソートして上位5個を返す
+        sorted_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)
+        return [tag for tag, count in sorted_tags[:5]]
     
     def _extract_simple_tags(self, text: str) -> List[str]:
         """簡単なタグ抽出"""
