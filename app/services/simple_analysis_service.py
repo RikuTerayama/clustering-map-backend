@@ -226,10 +226,3 @@ class SimpleAnalysisService:
         word_counts = Counter(words)
         tags = [word for word, count in word_counts.items() if len(word) > 2 and count > 1]
         return tags[:5]  # 最大5個のタグ
-    
-    def _get_all_tags(self, data_points: List[DataPoint]) -> List[str]:
-        """すべてのタグを取得"""
-        all_tags = []
-        for dp in data_points:
-            all_tags.extend(dp.tags)
-        return list(set(all_tags))
