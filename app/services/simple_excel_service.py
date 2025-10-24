@@ -76,18 +76,21 @@ class SimpleExcelService:
     def _generate_simple_tags(self, texts: List[str]) -> List[TagCandidate]:
         """ビジネス文脈に沿ったタグ候補を生成"""
         try:
-            # ビジネス関連のキーワード辞書（働き方、会社業績、仲間など）
+            # より具体的なビジネスキーワード辞書
             business_keywords = {
-                "働き方": ["働き方", "ワークライフバランス", "残業", "休暇", "リモートワーク", "在宅勤務", "フレックス", "時短", "勤務時間", "労働環境"],
-                "会社業績": ["業績", "売上", "利益", "成長", "拡大", "成功", "目標", "達成", "KPI", "業界", "市場", "競合"],
-                "仲間・チーム": ["仲間", "チーム", "同僚", "上司", "部下", "協力", "連携", "コミュニケーション", "関係", "人間関係", "職場"],
-                "キャリア": ["キャリア", "昇進", "昇格", "転職", "スキル", "経験", "学習", "成長", "挑戦", "目標", "将来"],
-                "会社文化": ["文化", "風土", "価値観", "理念", "方針", "ルール", "慣習", "伝統", "雰囲気", "環境"],
-                "給与・待遇": ["給与", "給料", "年収", "ボーナス", "賞与", "福利厚生", "待遇", "手当", "報酬", "インセンティブ"],
-                "仕事内容": ["仕事", "業務", "プロジェクト", "タスク", "責任", "役割", "職務", "作業", "成果", "結果"],
-                "会社評価": ["評価", "評判", "信頼", "信用", "ブランド", "イメージ", "知名度", "地位", "ポジション"],
-                "満足度": ["満足", "良い", "素晴らしい", "優秀", "完璧", "最高", "気に入り", "おすすめ", "良い", "快適"],
-                "不満・改善": ["不満", "悪い", "問題", "困る", "改善", "要望", "残念", "課題", "問題点", "改善点"]
+                "残業問題": ["残業", "22時", "夜", "遅く", "長時間労働", "過労", "深夜", "夜勤", "時間外"],
+                "ワークライフバランス": ["ワークライフバランス", "プライベート", "家族", "休暇", "休み", "余暇", "生活", "時間"],
+                "連絡・コミュニケーション": ["連絡", "電話", "メール", "夜", "休日", "緊急", "呼び出し", "連絡先"],
+                "チームワーク": ["チーム", "仲間", "同僚", "協力", "助け合い", "連携", "サポート", "支え"],
+                "上司・部下関係": ["上司", "部下", "マネージャー", "リーダー", "管理", "指導", "評価", "フィードバック"],
+                "キャリア成長": ["スキル", "スキルアップ", "研修", "学習", "成長", "経験", "知識", "能力向上"],
+                "昇進・昇格": ["昇進", "昇格", "昇給", "ポジション", "役職", "責任", "権限", "地位"],
+                "給与・待遇": ["給与", "給料", "年収", "ボーナス", "賞与", "手当", "福利厚生", "待遇"],
+                "会社業績": ["業績", "売上", "利益", "成長", "目標", "達成", "成功", "拡大"],
+                "会社文化": ["文化", "風土", "価値観", "理念", "方針", "ルール", "慣習", "雰囲気"],
+                "仕事内容": ["プロジェクト", "タスク", "業務", "作業", "責任", "役割", "成果", "結果"],
+                "職場環境": ["環境", "オフィス", "設備", "スペース", "快適", "使いやすい", "整備", "改善"],
+                "満足・不満": ["満足", "不満", "良い", "悪い", "問題", "改善", "要望", "期待", "希望"]
             }
             
             # テキストからキーワードを抽出（より詳細な分析）
@@ -178,17 +181,23 @@ class SimpleExcelService:
             'length': len(text),
             'word_count': len(text.split()),
             'sentiment_indicators': {
-                'positive': len(re.findall(r'良い|素晴らしい|最高|満足|気に入り|おすすめ', text)),
-                'negative': len(re.findall(r'悪い|問題|困る|不満|残念|改善', text)),
+                'positive': len(re.findall(r'良い|素晴らしい|最高|満足|気に入り|おすすめ|快適|嬉しい', text)),
+                'negative': len(re.findall(r'悪い|問題|困る|不満|残念|改善|禁止|保てない|難しい', text)),
                 'neutral': 0
             },
             'business_indicators': {
-                'work_style': len(re.findall(r'働き方|残業|休暇|リモート|在宅|フレックス', text)),
-                'performance': len(re.findall(r'業績|売上|利益|成長|目標|達成', text)),
-                'team': len(re.findall(r'仲間|チーム|同僚|上司|部下|協力', text)),
-                'career': len(re.findall(r'キャリア|昇進|スキル|経験|学習|成長', text)),
-                'culture': len(re.findall(r'文化|風土|価値観|理念|方針|雰囲気', text)),
-                'compensation': len(re.findall(r'給与|給料|年収|ボーナス|待遇|報酬', text))
+                '残業問題': len(re.findall(r'残業|22時|夜|遅く|長時間労働|過労|深夜|夜勤|時間外', text)),
+                'ワークライフバランス': len(re.findall(r'ワークライフバランス|プライベート|家族|休暇|休み|余暇|生活|時間', text)),
+                '連絡・コミュニケーション': len(re.findall(r'連絡|電話|メール|夜|休日|緊急|呼び出し|連絡先', text)),
+                'チームワーク': len(re.findall(r'チーム|仲間|同僚|協力|助け合い|連携|サポート|支え', text)),
+                '上司・部下関係': len(re.findall(r'上司|部下|マネージャー|リーダー|管理|指導|評価|フィードバック', text)),
+                'キャリア成長': len(re.findall(r'スキル|スキルアップ|研修|学習|成長|経験|知識|能力向上', text)),
+                '昇進・昇格': len(re.findall(r'昇進|昇格|昇給|ポジション|役職|責任|権限|地位', text)),
+                '給与・待遇': len(re.findall(r'給与|給料|年収|ボーナス|賞与|手当|福利厚生|待遇', text)),
+                '会社業績': len(re.findall(r'業績|売上|利益|成長|目標|達成|成功|拡大', text)),
+                '会社文化': len(re.findall(r'文化|風土|価値観|理念|方針|ルール|慣習|雰囲気', text)),
+                '仕事内容': len(re.findall(r'プロジェクト|タスク|業務|作業|責任|役割|成果|結果', text)),
+                '職場環境': len(re.findall(r'環境|オフィス|設備|スペース|快適|使いやすい|整備|改善', text))
             }
         }
         return features
@@ -208,12 +217,18 @@ class SimpleExcelService:
                 'neutral': sum(t['sentiment_indicators']['neutral'] for t in text_analyses)
             },
             'business_summary': {
-                'work_style': sum(t['business_indicators']['work_style'] for t in text_analyses),
-                'performance': sum(t['business_indicators']['performance'] for t in text_analyses),
-                'team': sum(t['business_indicators']['team'] for t in text_analyses),
-                'career': sum(t['business_indicators']['career'] for t in text_analyses),
-                'culture': sum(t['business_indicators']['culture'] for t in text_analyses),
-                'compensation': sum(t['business_indicators']['compensation'] for t in text_analyses)
+                '残業問題': sum(t['business_indicators']['残業問題'] for t in text_analyses),
+                'ワークライフバランス': sum(t['business_indicators']['ワークライフバランス'] for t in text_analyses),
+                '連絡・コミュニケーション': sum(t['business_indicators']['連絡・コミュニケーション'] for t in text_analyses),
+                'チームワーク': sum(t['business_indicators']['チームワーク'] for t in text_analyses),
+                '上司・部下関係': sum(t['business_indicators']['上司・部下関係'] for t in text_analyses),
+                'キャリア成長': sum(t['business_indicators']['キャリア成長'] for t in text_analyses),
+                '昇進・昇格': sum(t['business_indicators']['昇進・昇格'] for t in text_analyses),
+                '給与・待遇': sum(t['business_indicators']['給与・待遇'] for t in text_analyses),
+                '会社業績': sum(t['business_indicators']['会社業績'] for t in text_analyses),
+                '会社文化': sum(t['business_indicators']['会社文化'] for t in text_analyses),
+                '仕事内容': sum(t['business_indicators']['仕事内容'] for t in text_analyses),
+                '職場環境': sum(t['business_indicators']['職場環境'] for t in text_analyses)
             }
         }
         return combined
