@@ -80,7 +80,7 @@ class SimpleAnalysisService:
                     metadata={
                         "word_count": word_count,
                         "char_count": char_count,
-                        "department": request.group_column and request.groups[i] if request.groups else None
+                        "department": None  # グループ情報は現在使用しない
                     }
                 )
                 data_points.append(data_point)
