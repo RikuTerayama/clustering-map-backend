@@ -5,7 +5,7 @@ services:
     env: python
     region: oregon
     plan: free
-        pythonVersion: "3.11"
+    pythonVersion: "3.11"
     buildCommand: |
       pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -21,5 +21,5 @@ services:
       - key: MAX_UPLOAD_SIZE
         value: "50MB"
       - key: CORS_ORIGINS
-        value: "https://clustering-map-frontend.onrender.com"
+        value: "https://clustering-map-frontend.onrender.com,http://localhost:3000,http://127.0.0.1:3000"
     healthCheckPath: /health
