@@ -88,11 +88,17 @@ async def root():
     """ルートエンドポイント"""
     return {"message": "Clustering Map API", "version": "0.1.0"}
 
-
 @app.get("/health")
 async def health_check():
-    """ヘルスチェック"""
-    return {"status": "healthy"}
+    """ヘルスチェックエンドポイント"""
+    return {
+        "status": "healthy",
+        "message": "Clustering Map API is running",
+        "version": "0.1.0",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
 
 
 @app.get("/template")
