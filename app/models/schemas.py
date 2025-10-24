@@ -57,6 +57,7 @@ class AnalysisRequest(BaseModel):
         "random_state": 42
     })
     shape_mask_path: Optional[str] = Field(None, description="図形マスクのパス")
+    config: Optional[Dict[str, Any]] = Field(None, description="解析設定")
 
 
 class DataPoint(BaseModel):
