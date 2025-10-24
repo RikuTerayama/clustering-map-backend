@@ -57,7 +57,7 @@ class AppConfig(BaseModel):
         """設定ファイルに保存"""
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
         with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(self.dict(), f, ensure_ascii=False, indent=2)
+            json.dump(self.model_dump(), f, ensure_ascii=False, indent=2)
     
     def ensure_directories(self) -> None:
         """必要なディレクトリを作成"""
