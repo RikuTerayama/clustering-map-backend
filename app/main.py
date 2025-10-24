@@ -90,8 +90,9 @@ async def health_check():
 async def upload_excel(file: UploadFile = File(...)):
     """Excelファイルをアップロードして前処理"""
     try:
+        logger.info(f"Upload request received: filename={file.filename}, content_type={file.content_type}")
         # ファイル形式の検証
-        if not is_valid_excel_file(file.filename):
+        if not file.filename or not is_valid_excel_file(file.filename):
             raise HTTPException(
                 status_code=400,
                 detail="サポートされていないファイル形式です。.xlsxまたは.xlsファイルをアップロードしてください。"
@@ -99,6 +100,7 @@ async def upload_excel(file: UploadFile = File(...)):
         
         # ファイルサイズの検証
         content = await file.read()
+        logger.info(f"File size: {len(content)} bytes")
         if len(content) > config.max_file_size:
             raise HTTPException(
                 status_code=400,
@@ -106,12 +108,14 @@ async def upload_excel(file: UploadFile = File(...)):
             )
         
         # 一時ファイルに保存
-        from utils.file_utils import create_temp_file, cleanup_temp_file
+        from app.utils.file_utils import create_temp_file, cleanup_temp_file
         temp_file_path = create_temp_file(content, '.xlsx')
         
         try:
             # Excelファイルを読み込み
+            logger.info(f"Reading Excel file: {temp_file_path}")
             df = read_excel_file(temp_file_path)
+            logger.info(f"Excel file loaded: {len(df)} rows, {len(df.columns)} columns")
             
             # 行数制限の検証
             if len(df) > config.max_rows:
@@ -121,11 +125,15 @@ async def upload_excel(file: UploadFile = File(...)):
                 )
             
             # サンプルデータを取得
+            logger.info("Generating sample data...")
             sample_data = get_sample_data(df, 5)
             
             # タグ候補を生成
+            logger.info("Generating tag candidates...")
             tag_candidates = excel_service.generate_tag_candidates(df)
+            logger.info(f"Generated {len(tag_candidates)} tag candidates")
             
+            logger.info("Upload processing completed successfully")
             return UploadResponse(
                 success=True,
                 message="ファイルのアップロードと前処理が完了しました。",
@@ -141,7 +149,7 @@ async def upload_excel(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Upload failed: {e}")
+        logger.error(f"Upload failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"ファイルの処理中にエラーが発生しました: {str(e)}")
 
 
