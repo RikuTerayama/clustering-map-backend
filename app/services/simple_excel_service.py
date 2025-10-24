@@ -74,7 +74,7 @@ class SimpleExcelService:
     def update_tag_rules(self, rules: List[TagRule]) -> bool:
         """タグルールの更新"""
         try:
-            rules_data = [rule.dict() for rule in rules]
+            rules_data = [rule.model_dump() for rule in rules]
             with open(self.config.tag_rules_path, 'w', encoding='utf-8') as f:
                 json.dump(rules_data, f, ensure_ascii=False, indent=2)
             return True
