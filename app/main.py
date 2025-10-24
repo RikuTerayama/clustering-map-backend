@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 import logging
 import os
@@ -54,11 +54,20 @@ app = FastAPI(
 
 # CORS設定
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+# 本番環境ではフロントエンドのURLを追加
+if os.getenv("ENVIRONMENT") == "production":
+    cors_origins.extend([
+        "https://clustering-map-frontend.onrender.com",
+        "https://clustering-map-frontend.onrender.com/"
+    ])
+
+logger.info(f"CORS origins: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -84,6 +93,69 @@ async def root():
 async def health_check():
     """ヘルスチェック"""
     return {"status": "healthy"}
+
+
+@app.get("/template")
+async def download_template():
+    """テンプレートファイルをダウンロード"""
+    try:
+        import pandas as pd
+        from io import BytesIO
+        
+        # サンプルデータを作成
+        sample_data = [
+            'このサービスはとても使いやすく、機能も充実しています。特にUIが分かりやすいのが良いです。',
+            '料金が少し高いと感じます。もう少し安くなれば利用したいです。',
+            'サポートが丁寧で、問題がすぐに解決されました。ありがとうございます。',
+            '機能は良いのですが、もう少しシンプルな操作ができると良いです。',
+            '全体的に満足しています。継続して利用したいと思います。',
+            'レスポンスが早くて助かります。使い勝手も良いです。',
+            'エラーが発生することがあり、改善が必要だと思います。',
+            'デザインが美しく、操作も直感的で使いやすいです。',
+            '料金体系が複雑で分かりにくいです。シンプルにしてほしい。',
+            'カスタマーサポートの対応が素晴らしいです。'
+        ]
+        
+        # DataFrameを作成
+        df = pd.DataFrame({'自由記述': sample_data})
+        
+        # Excelファイルをメモリ上に作成
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='アンケート結果', index=False)
+            
+            # ワークシートのスタイル設定
+            worksheet = writer.sheets['アンケート結果']
+            
+            # 列幅を調整
+            worksheet.column_dimensions['A'].width = 80
+            
+            # ヘッダーのスタイル設定
+            from openpyxl.styles import Font, PatternFill, Alignment
+            header_font = Font(bold=True, color="FFFFFF")
+            header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+            
+            for cell in worksheet[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+            # データ行のスタイル設定
+            for row in worksheet.iter_rows(min_row=2):
+                for cell in row:
+                    cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+        
+        output.seek(0)
+        
+        return Response(
+            content=output.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=clustering_map_template.xlsx"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Template generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"テンプレートの生成に失敗しました: {str(e)}")
 
 
 @app.post("/upload", response_model=UploadResponse)
