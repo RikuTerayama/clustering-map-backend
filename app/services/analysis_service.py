@@ -45,7 +45,7 @@ class AnalysisService:
         """データの解析を実行"""
         try:
             # 現在の設定を保存
-            self.current_config = request.dict()
+            self.current_config = request.model_dump()
             
             # データを読み込み（実際の実装では、アップロードされたデータを取得）
             # ここでは仮のデータを使用
