@@ -229,6 +229,10 @@ async def upload_excel(file: UploadFile = File(...)):
 async def analyze_data(request: AnalysisRequest):
     """データの解析を実行"""
     try:
+        # リクエスト内容をログに出力
+        logger.info(f"Analysis request received: cluster_method={request.cluster_method}, shape_mask_path={request.shape_mask_path}")
+        logger.info(f"Request dict: {request.model_dump()}")
+        
         # 解析を実行
         result = analysis_service.analyze_data(request)
         
