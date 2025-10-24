@@ -242,7 +242,7 @@ async def analyze_data(request: AnalysisRequest):
             data_points=result["data_points"],
             clusters=result["clusters"],
             tags=result["tags"],
-            config=result["config"]
+            config=result.get("config", {})
         )
     
     except Exception as e:
