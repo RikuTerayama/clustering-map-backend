@@ -27,7 +27,7 @@ class SimpleExportService:
         """PDFエクスポート（軽量版）"""
         try:
             # データポイントをDataFrameに変換
-            df = pd.DataFrame([dp.dict() for dp in data_points])
+            df = pd.DataFrame([dp.model_dump() for dp in data_points])
             
             # 図の作成
             fig, ax = plt.subplots(figsize=(12, 8))
@@ -71,7 +71,7 @@ class SimpleExportService:
         """PNGエクスポート（軽量版）"""
         try:
             # データポイントをDataFrameに変換
-            df = pd.DataFrame([dp.dict() for dp in data_points])
+            df = pd.DataFrame([dp.model_dump() for dp in data_points])
             
             # 図の作成
             fig, ax = plt.subplots(figsize=(12, 8))
