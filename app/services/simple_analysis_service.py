@@ -28,6 +28,10 @@ class SimpleAnalysisService:
     def analyze_data(self, request: AnalysisRequest) -> Dict[str, Any]:
         """データの分析（簡素化版）"""
         try:
+            logger.info("Starting analysis...")
+            logger.info(f"Request attributes: {dir(request)}")
+            logger.info(f"Request type: {type(request)}")
+            
             # ダミーデータを生成（実際の実装では、アップロードされたデータを使用）
             texts = [
                 "このサービスはとても使いやすく、機能も充実しています。",
