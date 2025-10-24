@@ -17,14 +17,31 @@ from app.services.simple_export_service import SimpleExportService
 from app.utils.file_utils import read_excel_file, get_sample_data, is_valid_excel_file
 from app.utils.config_utils import ConfigManager, ResultManager
 
+# 設定の読み込み（ログ設定より前に実行）
+config = AppConfig.load_from_file()
+config.ensure_directories()
+
 # ログ設定
+# 環境変数に基づいてログ設定を調整
+log_level = os.getenv("LOG_LEVEL", "INFO")
+environment = os.getenv("ENVIRONMENT", "development")
+
+# ログハンドラーの設定
+handlers = [logging.StreamHandler()]
+
+# 本番環境以外ではファイルログも有効にする
+if environment != "production":
+    try:
+        os.makedirs('logs', exist_ok=True)
+        handlers.append(logging.FileHandler('logs/app.log', encoding='utf-8'))
+    except Exception as e:
+        # ファイルログが作成できない場合はストリームログのみ
+        print(f"Warning: Could not create log file: {e}")
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, log_level.upper(), logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/app.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger(__name__)
 
@@ -44,10 +61,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# 設定の読み込み
-config = AppConfig.load_from_file()
-config.ensure_directories()
 
 # サービスの初期化
 excel_service = SimpleExcelService()
