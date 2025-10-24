@@ -74,9 +74,23 @@ class SimpleExcelService:
             return []
 
     def _generate_simple_tags(self, texts: List[str]) -> List[TagCandidate]:
-        """基本的なタグ候補を生成（ルールベース）"""
+        """ビジネス文脈に沿ったタグ候補を生成"""
         try:
-            # 基本的なキーワード抽出
+            # ビジネス関連のキーワード辞書
+            business_keywords = {
+                "満足度": ["満足", "良い", "素晴らしい", "優秀", "完璧", "最高", "気に入り", "おすすめ"],
+                "不満": ["不満", "悪い", "問題", "困る", "改善", "要望", "残念", "残念"],
+                "価格": ["価格", "料金", "コスト", "費用", "安い", "高い", "値段", "価値"],
+                "サービス": ["サービス", "対応", "サポート", "支援", "ヘルプ", "案内", "説明"],
+                "機能": ["機能", "性能", "仕様", "特徴", "使いやすさ", "操作性", "インターフェース"],
+                "品質": ["品質", "質", "精度", "正確性", "信頼性", "安定性", "耐久性"],
+                "デザイン": ["デザイン", "見た目", "外観", "美しい", "スタイル", "レイアウト", "UI"],
+                "速度": ["速度", "速い", "遅い", "レスポンス", "処理時間", "効率", "パフォーマンス"],
+                "使いやすさ": ["使いやすい", "簡単", "直感的", "分かりやすい", "操作", "手順"],
+                "カスタマーサポート": ["サポート", "対応", "問い合わせ", "相談", "ヘルプ", "フォロー"]
+            }
+            
+            # テキストからキーワードを抽出
             all_words = []
             for text in texts:
                 if not text or text.strip() == '':
@@ -91,22 +105,54 @@ class SimpleExcelService:
             # 頻出単語をカウント
             word_counts = Counter(all_words)
             
-            # タグ候補を生成
+            # ビジネスカテゴリベースのタグ候補を生成
             tag_candidates = []
-            for word, count in word_counts.most_common(20):  # 上位20個
-                if len(word) > 2 and count > 1:  # 2文字以上、2回以上出現
+            
+            # 各ビジネスカテゴリについて、関連キーワードの出現頻度を計算
+            for category, keywords in business_keywords.items():
+                category_score = 0
+                category_count = 0
+                
+                for keyword in keywords:
+                    if keyword in word_counts:
+                        category_score += word_counts[keyword]
+                        category_count += word_counts[keyword]
+                
+                if category_count > 0:
+                    # カテゴリ全体のスコア
+                    tag_candidates.append(TagCandidate(
+                        text=category,
+                        score=category_score / len(texts),
+                        category="ビジネスカテゴリ",
+                        count=category_count
+                    ))
+            
+            # 個別の頻出キーワードも追加（ビジネス関連のもののみ）
+            business_related_words = set()
+            for keywords in business_keywords.values():
+                business_related_words.update(keywords)
+            
+            for word, count in word_counts.most_common(30):
+                if (len(word) > 2 and count > 1 and 
+                    (word in business_related_words or 
+                     any(business_word in word for business_word in business_related_words))):
                     tag_candidates.append(TagCandidate(
                         text=word,
                         score=count / len(texts),
-                        category="自動生成",
+                        category="キーワード",
                         count=count
                     ))
             
-            logger.info(f"Generated {len(tag_candidates)} tag candidates")
-            return tag_candidates
+            # スコア順でソート
+            tag_candidates.sort(key=lambda x: x.score, reverse=True)
+            
+            # 上位20個を返す
+            result = tag_candidates[:20]
+            logger.info(f"Generated {len(result)} business-context tag candidates")
+            return result
             
         except Exception as e:
-            logger.error(f"Simple tag generation failed: {e}")
+            logger.error(f"Business tag generation failed: {e}")
             return []
     
     def get_tag_rules(self) -> List[Dict[str, Any]]:
