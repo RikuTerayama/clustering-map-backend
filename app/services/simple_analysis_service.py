@@ -124,6 +124,14 @@ class SimpleAnalysisService:
                     "average_word_count": np.mean([dp.metadata["word_count"] for dp in data_points]),
                     "average_char_count": np.mean([dp.metadata["char_count"] for dp in data_points]),
                     "num_clusters": n_clusters
+                },
+                "config": {
+                    "cluster_method": request.cluster_method,
+                    "shape_mask": shape_mask,
+                    "n_clusters": n_clusters,
+                    "hdbscan_params": request.hdbscan_params,
+                    "kmeans_params": request.kmeans_params,
+                    "umap_params": request.umap_params
                 }
             }
             logger.info("Analysis completed successfully")
