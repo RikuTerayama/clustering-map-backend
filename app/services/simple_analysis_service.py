@@ -55,6 +55,10 @@ class SimpleAnalysisService:
             else:
                 cluster_labels = [0] * len(texts)
             
+            # 図形に基づく座標生成
+            shape_mask = request.shape_mask_path if hasattr(request, 'shape_mask_path') else 'circle'
+            coordinates = self._generate_shape_coordinates(len(texts), shape_mask)
+            
             # データポイントを生成
             data_points = []
             for i, text in enumerate(texts):
@@ -62,10 +66,9 @@ class SimpleAnalysisService:
                 word_count = len(text.split()) if text else 0
                 char_count = len(text) if text else 0
                 
-                # 簡単な座標生成（クラスタに基づく）
+                # 図形に基づく座標
                 cluster_id = cluster_labels[i]
-                x = np.random.uniform(0, 1) + cluster_id * 0.2
-                y = np.random.uniform(0, 1) + cluster_id * 0.2
+                x, y = coordinates[i]
                 
                 data_point = DataPoint(
                     id=str(i),
@@ -107,6 +110,83 @@ class SimpleAnalysisService:
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
             raise Exception(f"分析中にエラーが発生しました: {str(e)}")
+
+    def _generate_shape_coordinates(self, num_points: int, shape: str) -> List[Tuple[float, float]]:
+        """指定された図形に基づいて座標を生成"""
+        coordinates = []
+        
+        if shape == 'circle':
+            # 円形配置
+            for i in range(num_points):
+                angle = 2 * np.pi * i / num_points
+                radius = 0.3 + np.random.uniform(-0.1, 0.1)
+                x = 0.5 + radius * np.cos(angle)
+                y = 0.5 + radius * np.sin(angle)
+                coordinates.append((x, y))
+                
+        elif shape == 'square':
+            # 四角形配置
+            side_length = int(np.ceil(np.sqrt(num_points)))
+            for i in range(num_points):
+                row = i // side_length
+                col = i % side_length
+                x = 0.2 + (col / (side_length - 1)) * 0.6 if side_length > 1 else 0.5
+                y = 0.2 + (row / (side_length - 1)) * 0.6 if side_length > 1 else 0.5
+                coordinates.append((x, y))
+                
+        elif shape == 'triangle':
+            # 三角形配置
+            for i in range(num_points):
+                # 三角形の頂点を基準に配置
+                if i % 3 == 0:
+                    x, y = 0.5, 0.8  # 上
+                elif i % 3 == 1:
+                    x, y = 0.2, 0.2  # 左下
+                else:
+                    x, y = 0.8, 0.2  # 右下
+                # 少しランダムにずらす
+                x += np.random.uniform(-0.1, 0.1)
+                y += np.random.uniform(-0.1, 0.1)
+                coordinates.append((x, y))
+                
+        elif shape == 'heart':
+            # ハート形配置
+            for i in range(num_points):
+                t = 2 * np.pi * i / num_points
+                x = 16 * np.sin(t)**3
+                y = 13 * np.cos(t) - 5 * np.cos(2*t) - 2 * np.cos(3*t) - np.cos(4*t)
+                # 正規化して0-1の範囲に
+                x = (x + 16) / 32
+                y = (y + 20) / 40
+                coordinates.append((x, y))
+                
+        elif shape == 'star':
+            # 星形配置
+            for i in range(num_points):
+                angle = 2 * np.pi * i / num_points
+                # 5角星の形状
+                radius = 0.3 + 0.1 * np.sin(5 * angle)
+                x = 0.5 + radius * np.cos(angle)
+                y = 0.5 + radius * np.sin(angle)
+                coordinates.append((x, y))
+                
+        elif shape == 'hexagon':
+            # 六角形配置
+            for i in range(num_points):
+                angle = 2 * np.pi * i / num_points
+                radius = 0.3
+                x = 0.5 + radius * np.cos(angle)
+                y = 0.5 + radius * np.sin(angle)
+                coordinates.append((x, y))
+                
+        else:
+            # デフォルト: ランダム配置
+            for i in range(num_points):
+                x = np.random.uniform(0.1, 0.9)
+                y = np.random.uniform(0.1, 0.9)
+                coordinates.append((x, y))
+        
+        return coordinates
     
     def _extract_simple_tags(self, text: str) -> List[str]:
         """簡単なタグ抽出"""
